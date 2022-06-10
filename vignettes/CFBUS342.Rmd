@@ -1,0 +1,130 @@
+---
+title: "CFBUS342 Vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Relationship between Present Value and Future Value (calculators)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE, echo=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(CFBUS342)
+library(tidyverse)
+```
+
+  We would utilize the present value and future value to understand the value of money at different points in time. It is pretty clear that over time the value of current changes... for example up until the 1960s, a bottle of Coca-Cola would only cost 5 cents, but today that would be the average cost of an ounce of soda. The main point of that analogy is to show that inflation or interest rates are the main factor of change in currency. 
+
+  In our PV (present value) and FV (future value) calculators, you can see the effect of duration on interest rate on the valuation of a good. 
+  
+The PV function shows how much the amount received at a specified point in the future would be worth today for a given interest rate. The interest rate represents yield rate in a compounding period.
+
+The FV function shows how much a current amount is worth at a future specified point in time based on a given interest rate. 
+  
+*Example: Lets say you are in 1st grade on lunch break. The book fair is tomorrow and you really want to buy some toys. Your friend, Joe, is really hungry and wants a candy bar, but Joe didn't bring any money and so he asks to borrow some for you. Now your a real loan shark so you say that you will loan him money, but he has to pay double of what you give him tommorow. Joe says that a crazy 100% interest rate. How much will you have to spend tommorow at the fair if Joe borrows a dollar?*
+
+```{r}
+p.v = 1 #the 1 dollar you lend to Joe
+day = 1 # the one day
+FV(pv = p.v, period = day, interest_rate = 1)  #equals $2
+#Joe would owe you 2 Dollars.
+```
+
+Now lets say you are Joe. You are really hungry, but you know you only have 2 dollars saved up at home. How much can you borrow from Billy, so you can pay him 2 dollars tomorrow at a 100% interest rate. 
+```{r}
+f.v = 2 #the 2 dollar you have at home
+day = 1 # the one day
+PV(fv = f.v, period = day, interest_rate = 1)  #equals $1
+#Joe would only be able to borrow 1 Dollar.
+```
+
+```{r}
+x = 0:10
+y=FV(10, x, .01)
+plot(x,y)
+```
+
+```{r}
+x = 0:10/40
+y=PV(1, 1, x)
+plot(x,y)
+```
+
+#perpetuity
+A perpetuity is a security that pays for an infinite amount of time. In finance, perpetuity is a constant stream of identical cash flows with no end.
+
+The functions available for perpetuities for this package are for present value for the infinite cashflow streams and determining the discount rate (which is the technical name for the interest rate).
+
+Perpetuity Present Value Example: In one of my favorite shows "How I Met Your Mother", Ted makes a deal with a homeless man after accidentally throwing away his friends work stuff. The homeless man wanted a crazy 1 million dollars, but Ted said no. He then made a deal where Ted will pay the homeless man 1 dollar every time he sees him. Obviously this example is a bit strange, but lets assume that Ted sees the homeless man everyday for the rest of his life. Based on this problem since the payment (1 dollar) never grows, then the growth rate is 0. Lets assume that the economy is growing at a steady rate, so the Fed set the target inflation rate (discount rate) at about 2%. What was the value of the deal that Ted made at the time of negotiating (present value)?
+
+```{r}
+r = APR_TO_EAR(.02, 365)/365 #converting to a daily rate from annual 2%
+
+PERPETIUTY_PV(payment = 1, discount_rate = r, growth_rate = 0)
+
+#The deal that Ted made was was worth $18,068.61, so Ted definitely made a much better deal than the original 1 million dollars.
+```
+
+```{r}
+PERPETIUTY_PV(payment=100, discount_rate=.05, growth_rate=.04)  #equals $10,000
+```
+
+Perpetuity Interest Rate Example: Lets say you're Mike Ross from Suits. You just switched jobs as a lawyer to to an investment banker. Your boss, Johnathon Sidwell has been waiting for you to get a big deal done. You say you got a deal that will cost 20 million USD as an up front investment, but then will return annual payments starting at 500,000 USD and increasing at about 5%. Your boss acts what the rate of return (interest rate) on the deal will be?  
+
+```{r}
+PERPETIUTY_R(payment = 500000, PV=20000000, growth_rate=.05)
+
+# You tell your boss that there is an estimated return rate of 7.5%. He thinks that solid, but you can do better. (that's what happened in the show)
+```
+
+```{r}
+PERPETIUTY_R(payment=1, PV=50, growth_rate=.08) #interest rate of .1
+```
+
+Big Ugly Example: Lets say you bought a car last year and you are currently in the process of paying 500 dollars monthly for your monthly car mortgage. You're bank says there is a 6% interest rate for your car loan. Your payments are increasing by 2% and you next payment is due today (annuity due). There are still 24 months left on your loan. How much do you still owe on your car?
+```{r}
+r = APR_TO_EAR(.02, 12)/12 #to monthly
+r2 = APR_TO_EAR(.06, 12)/12 #to monthly
+BIG_UGLY_PV(payment=500, compounding_period=24, interest_rate= r2, growth_rate= r, annuity=T)
+
+#You still owe $11,537.03 currently on your car. This means that if you wanted to pay off that loan, you would have to pay the bank $11,537.03 today. 
+```
+Big Ugly Payment Example: The average interest rate for houses on a 30 year loan with monthly payments is about 6%. The bank set the growth rate of the payments at about 2% based on their target guidelines. You are interested in a house that has a estimated valuation at about 500,000. The bank tells you need 20% down to get approved for the loan. You have the $100,000 needed for the down payment on the loan. What is the expected monthly payment for the loan?
+```{r}
+pv=500000-500000*.2
+r = APR_TO_EAR(.02, 12)/12 #to monthly
+r2 = APR_TO_EAR(.06, 12)/12 #to monthly
+BIG_UGLY_PAYMENT(PV=pv, compound_period=30*12, interest_rate=r2, growth_rate=r, annuity=F)
+#Given the conditions from the problem above, the expected monthly payments are $1945.91.
+```
+
+#NPV Example: You're an entrepreneur who got an offer to buy subway and gas station combo for 2 million dollars. You expect a 6% interest rate for the loan to buy the assets. The books show an average annual profit of about $100,000. You goal is to calculate what a fair asking price (NPV) of this is if you held the assets for 5 years and then sold then for 2 million.
+
+```{r}
+cash_change=c(-2000000,100000, 100000, 100000, 100000, 100000+2000000)
+
+NPV(cashflows=cash_change, interest_rate=.06) 
+
+#Based on the conditions above, the asking price is $84247.28 too high. This would be a bad investment.
+```
+
+IRR Example: According to the same situation above, what interest rate would the asking price be a fair asking price (NPV = 0)?  
+
+
+```{r}
+cash_change=c(-2000000,100000, 100000, 100000, 100000, 100000+2000000)
+
+IRR(cashflows = cash_change)
+#If we were able to get the loan for an interest rate under 5%, then this would be an investment that would potentially be profitable.
+```
+```{r}
+IRR(c(-10, 0, 10, 10)) #interest rate of .3247
+IRR(c(-1, 1.1)) #interest rate of .1
+```
+

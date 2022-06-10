@@ -52,7 +52,7 @@ IRR <- function(cashflows){
   interest_rate = 0
   pv = 0
   while(pv>=0){
-    pv = sum(dat$cashflows/(1+interest_rate)^(time - 1)) - cost
+    pv = sum(dat$cashflows/(1+interest_rate)^(time - 1)) + cost
     interest_rate <- interest_rate + .00002
   }
 

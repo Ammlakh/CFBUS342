@@ -7,9 +7,9 @@ test_that("Net Present Value Calculator Error", {
 })
 
 test_that("Present Value Calculator Error", {
-  expect_equal(IRR(c(1, 1.1)), .1) #equals .1
+  expect_equal(IRR(c(-1, 1.1)), .1) #equals .1
 })
 
 test_that("Present Value Calculator Error", {
-  expect_equal(IRR(c(10, 0, 10, 10)), 0.3247) #equals 0.3247
+  expect_equal(IRR(c(-10, 0, 10, 10)), 0.3247) #equals 0.3247
 })
